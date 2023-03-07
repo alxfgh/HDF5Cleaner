@@ -1,0 +1,28 @@
+import h5py
+import numpy as np
+import tifffile
+import shutil
+from tkinter import filedialog
+
+# Get the input file name
+tiff_file = filedialog.askopenfilename(title='Select TIFF file', filetypes=(('TIFF file', '*.tif'),))
+original_h5_file = filedialog.askopenfilename(title='Select original H5 file', filetypes=(('H5 file', '*.h5'),))
+new_h5_file = filedialog.asksaveasfilename(title='Save as', filetypes=(('H5 file', '*.h5'),), defaultextension='.h5')
+
+# Close application if no file selected
+if not tiff_file or not original_h5_file or not new_h5_file:
+    print('No file selected')
+    exit()
+
+# Copy properties from original h5 file to new h5 file
+if original_h5_file != new_h5_file:
+    shutil.copyfile(original_h5_file, new_h5_file)
+
+# Load the images from the tiff file
+with tifffile.TiffFile(tiff_file) as tif:
+    tiff_images = tif.asarray()
+
+# Overwrite the images dataset in the h5 file with numpy array
+with h5py.File(new_h5_file, 'r+') as f:
+    images = f['Cube/Images']
+    images[...] = tiff_images
